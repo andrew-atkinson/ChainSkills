@@ -2,11 +2,11 @@ var ChainList = artifacts.require('./ChainList.sol')
 
 contract('ChainList', function (accounts) {
 
-  var ChainListInstance;
-  var seller = accounts[1];
-  var articleName = "article 1";
-  var articlePrice = 10;
-  var articleDescription = "this is an article description"
+  var ChainListInstance,
+    seller = accounts[1],
+    articleName = "article 1",
+    articlePrice = 10,
+    articleDescription = "this is an article description"
 
   it('should be initialized with empty values', function () {
     return ChainList
@@ -14,13 +14,13 @@ contract('ChainList', function (accounts) {
       .then(function (instance) {
         return instance
           .getArticle
-          .call();
+          .call()
       })
       .then(function (data) {
-        assert.equal(data[0], 0x0, 'seller must be empty');
-        assert.equal(data[1], '', 'article name must be empty');
-        assert.equal(data[2], '', 'description must be empty');
-        assert.equal(+ data[3], 0, 'article price must be zero');
+        assert.equal(data[0], 0x0, 'seller must be empty')
+        assert.equal(data[1], '', 'article name must be empty')
+        assert.equal(data[2], '', 'description must be empty')
+        assert.equal(+ data[3], 0, 'article price must be zero')
       })
   })
 
