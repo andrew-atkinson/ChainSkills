@@ -14,32 +14,32 @@ App = {
       web3 = new Web3(web3.currentProvider)
     } else {
       // set the provider from web3 provider
-      App.web3Provider = new Web3providers.HttpProvider('http://localhost:8545')
+      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545')
       web3 = new Web3(App.web3Provider)
     }
     App.displayAccountInfo()
     return App.initContract()
   },
 
-  displayAccountInfo: function () {
-    web3.eth.getCoinBase(function (err, account) {
-        if (err === null) {
-          App.account = account
-          $('#account').text(account)
-          web3.eth.getBalance(account, function (balance) {
-              if (err === null) {
-                $("#accountBalance").text(web3.fromWei(balance, "ether") + "ETH")
-              }
-            })
-        }
-      })
+  displayAccountInfo: function() {
+    web3.eth.getCoinbase(function(err, account) {
+      if (err === null) {
+        App.account = account
+        $("#account").text(account)
+        web3.eth.getBalance(account, function(err, balance) {
+          if (err === null) {
+            $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH");
+          }
+        })
+      }
+    })
   },
 
   initContract: function () {
     $.getJSON('ChainList.json', function (chainListArtifact) {
         App.contracts.ChainList = TruffleContract(chainListArtifact)
         App.contracts.ChainList.setProvider(App.web3Provider)
-      })
+    })
   }
 };
 
