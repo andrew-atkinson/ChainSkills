@@ -1,6 +1,6 @@
 var ChainList = artifacts.require('./ChainList.sol')
 
-contract('ChainList', (accounts) => {
+contract('ChainList',accounts => {
 
   var ChainListInstance,
     seller = accounts[1],
@@ -15,10 +15,10 @@ contract('ChainList', (accounts) => {
 
   it('should be initialized with empty values', () => {
     return ChainList.deployed()
-      .then((instance) => {
+      .then(instance => {
         return instance.getArticle.call()
       })
-      .then((data) => {
+      .then(data => {
         assert.equal(data[0], 0x0, 'seller must be empty')
         assert.equal(data[1], 0x0, 'buyer must be empty')
         assert.equal(data[2], '', 'article name must be empty')
@@ -29,14 +29,14 @@ contract('ChainList', (accounts) => {
 
   it('should sell an article', () => {
     return ChainList.deployed()
-      .then((instance) => {
+      .then(instance => {
         ChainListInstance = instance;
         return ChainListInstance.sellArticle(articleName, articleDescription, web3.toWei(articlePrice, "ether"), {from: seller})
       })
       .then(() => {
         return ChainListInstance.getArticle.call()
       })
-      .then((data) => {
+      .then(data => {
         assert.equal(data[0], seller, "seller must be " + seller)
         assert.equal(data[1], 0x0, "buyer must be empty")
         assert.equal(data[2], articleName, "article name must be " + articleName)
@@ -47,12 +47,12 @@ contract('ChainList', (accounts) => {
 
   it('should trigger an event when a new article is sold', () => {
     return ChainList.deployed()
-      .then((instance) => {
+      .then(instance => {
         ChainListInstance = instance
         watcher = ChainListInstance.SellArticleEvent()
         return ChainListInstance.sellArticle(articleName, articleDescription, web3.toWei(articlePrice, "ether"), {from: seller})
       })
-      .then((receipt) => {
+      .then(receipt => {
         assert.equal(receipt.logs.length, 1, "event should be 1 long")
         assert.equal(receipt.logs[0].args._seller, seller, "should have a seller:" + seller)
         assert.equal(receipt.logs[0].args._name, articleName, "should have a name:" + articleName)
@@ -62,7 +62,7 @@ contract('ChainList', (accounts) => {
 
   it('should buy an article', () => {
     return ChainList.deployed()
-      .then((instance) => {
+      .then(instance => {
         ChainListInstance = instance
         sellerBalanceBeforeBuy = web3.fromWei(+ web3.eth.getBalance(seller), "ether")
         buyerBalanceBeforeBuy = web3.fromWei(+ web3.eth.getBalance(buyer), "ether")
@@ -71,7 +71,7 @@ contract('ChainList', (accounts) => {
           value: web3.toWei(articlePrice, "ether")
         })
       })
-      .then((receipt) => {
+      .then(receipt => {
         assert.equal(receipt.logs.length, 1, "one event should be triggered")
         assert.equal(receipt.logs[0].event, "BuyArticleEvent", "buy event should be triggered")
         assert.equal(receipt.logs[0].args._seller, seller, "seller should be " + seller)
@@ -88,7 +88,7 @@ contract('ChainList', (accounts) => {
 
         return ChainListInstance.getArticle.call()
       })
-      .then((data) => {
+      .then(data => {
         assert.equal(data[0], seller, "seller must be " + seller)
         assert.equal(data[1], buyer, "buyer must be empty")
         assert.equal(data[2], articleName, "article name must be " + articleName)
