@@ -59,7 +59,6 @@ contract('ChainList', function (accounts) {
         assert.equal(events.length, 1, "event should be 1 long")
         assert.equal(events[0].args._seller, seller, "should have a seller:" + seller)
         assert.equal(events[0].args._name, articleName, "should have a name:" + articleName)
-        assert.equal(events[0].args._description, articleDescription, "should have a description:" + articleDescription)
         assert.equal(+events[0].args._price, web3.toWei(articlePrice, "ether"), "should have a price:" + web3.toWei(articlePrice, "ether"))
       })
   })
