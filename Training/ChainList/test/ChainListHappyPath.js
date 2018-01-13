@@ -43,4 +43,24 @@ contract('ChainList', function (accounts) {
         assert.equal(+ data[3], web3.toWei(articlePrice, "ether"), "Price must be " + web3.toWei(articlePrice, "ether"))
       })
   })
+
+  it('should trigger an event when a new article is sold', function () {
+    return ChainList
+      .deployed()
+      .then(function (instance) {
+        ChainListInstance = instance
+        watcher = ChainListInstance.SellArticleEvent()
+        return ChainListInstance.sellArticle(articleName, articleDescription, web3.toWei(articlePrice, "ether"), {from: seller})
+      })
+      .then(function () {
+        return watcher.get()
+      })
+      .then(function (events) {
+        assert.equal(events.length, 1, "event should be 1 long")
+        assert.equal(events[0].args._seller, seller, "should have a seller:" + seller)
+        assert.equal(events[0].args._name, articleName, "should have a name:" + articleName)
+        assert.equal(events[0].args._description, articleDescription, "should have a description:" + articleDescription)
+        assert.equal(+events[0].args._price, web3.toWei(articlePrice, "ether"), "should have a price:" + web3.toWei(articlePrice, "ether"))
+      })
+  })
 })
