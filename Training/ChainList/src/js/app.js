@@ -28,7 +28,7 @@ App = {
           $("#account").text(account)
           web3.eth.getBalance(account, function (err, balance) {
               if (err === null) {
-                $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH");
+                $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH")
               }
             })
         }
@@ -39,6 +39,7 @@ App = {
     $.getJSON('ChainList.json', function (chainListArtifact) {
         App.contracts.ChainList = TruffleContract(chainListArtifact)
         App.contracts.ChainList.setProvider(App.web3Provider)
+        App.listenToEvents()
         return App.reloadArticles()
       })
   },
@@ -85,18 +86,28 @@ App = {
           return instance.sellArticle(_article_name, _description, _price, {from:App.account, gas: 500000})
         })
         .then(function(result){
-          App.reloadArticles()
+
         })
         .catch(function(err){
           console.error(err)
         })
-      
+    },
 
+    listenToEvents: function() {
+      App.contracts.ChainList.deployed().then(function(instance) {
+        instance.SellArticleEvent({}, {
+          fromBlock: 0,
+          toBlock: 'latest'
+        }).watch(function(err, event) {
+          $("#events").append('<li class="list-group-item">' + event.args._name + ' is for sale' + '</li>')
+          App.reloadArticles();
+        })
+      })
     }
-};
+}
 
 $(function () {
   $(window).load(function () {
-      App.init();
-    });
-});
+      App.init()
+    })
+})
