@@ -52,14 +52,11 @@ contract('ChainList', function (accounts) {
         watcher = ChainListInstance.SellArticleEvent()
         return ChainListInstance.sellArticle(articleName, articleDescription, web3.toWei(articlePrice, "ether"), {from: seller})
       })
-      .then(function () {
-        return watcher.get()
-      })
-      .then(function (events) {
-        assert.equal(events.length, 1, "event should be 1 long")
-        assert.equal(events[0].args._seller, seller, "should have a seller:" + seller)
-        assert.equal(events[0].args._name, articleName, "should have a name:" + articleName)
-        assert.equal(+events[0].args._price, web3.toWei(articlePrice, "ether"), "should have a price:" + web3.toWei(articlePrice, "ether"))
+      .then(function (receipt) {
+        assert.equal(receipt.logs.length, 1, "event should be 1 long")
+        assert.equal(receipt.logs[0].args._seller, seller, "should have a seller:" + seller)
+        assert.equal(receipt.logs[0].args._name, articleName, "should have a name:" + articleName)
+        assert.equal(+receipt.logs[0].args._price, web3.toWei(articlePrice, "ether"), "should have a price:" + web3.toWei(articlePrice, "ether"))
       })
   })
 })
