@@ -64,10 +64,9 @@ App = {
         articleTemplate.find('.article-price').text(web3.fromWei(article[3], "ether"))
 
         var seller = article[0];
-        if (seller === App.account) 
-          seller = "You"
+        if (seller === App.account) seller = "You"
 
-        articleTemplate.find('#article-seller').text(seller)
+        articleTemplate.find('.article-seller').text(seller)
         articlesRow.append(articleTemplate.html())
       }).catch((err) => {
         console.log(err.message)
