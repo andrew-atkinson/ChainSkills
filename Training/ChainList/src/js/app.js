@@ -58,16 +58,30 @@ App = {
         var articlesRow = $('#articlesRow')
         articlesRow.empty()
 
+        var price = web3.fromWei(article[4], "ether")
+
         // retrieve and fill the article template
         var articleTemplate = $('#articleTemplate')
-        articleTemplate.find('.panel-title').text(article[1])
-        articleTemplate.find('.article-description').text(article[2])
-        articleTemplate.find('.article-price').text(web3.fromWei(article[3], "ether"))
+        articleTemplate.find('.panel-title').text(article[2])
+        articleTemplate.find('.article-description').text(article[3])
+        articleTemplate.find('.article-price').text(price)
+        articleTemplate.find('.btn-buy').attr('data-value', price)
 
+        // access seller
         var seller = article[0];
         if (seller === App.account) seller = "You"
-
         articleTemplate.find('.article-seller').text(seller)
+
+        //access buyer
+        var buyer = article[1];
+        if (buyer === App.account) {
+          buyer = "You"
+        } else if (buyer === 0x0) buyer = "No one yet"
+        articleTemplate.find('.article-buyer').text(buyer)
+
+        if (article[0] == App.account || article[1] != 0x0) articleTemplate.find('.btn-buy').hide() // n.b. 'article[1] !=', not 'article[1] !=='
+
+        // append the new article
         articlesRow.append(articleTemplate.html())
       }).catch((err) => {
         console.log(err.message)
@@ -93,21 +107,50 @@ App = {
         })
     },
 
-    listenToEvents: function() {
-      App.contracts.ChainList.deployed().then(function(instance) {
+    listenToEvents: ()  => {
+      App.contracts.ChainList.deployed().then((instance)=> {
         instance.SellArticleEvent({}, {
           fromBlock: 0,
           toBlock: 'latest'
-        }).watch(function(err, event) {
+        }).watch((err, event) =>{
           $("#events").append('<li class="list-group-item">' + event.args._name + ' is for sale' + '</li>')
           App.reloadArticles();
         })
+
+        instance.BuyArticleEvent({}, {
+          fromBlock: 0,
+          toBlock: 'latest'
+        }).watch((err, event) =>{
+          $("#events").append('<li class="list-group-item">' + event.args._buyer + ' bought ' + event.args._name + '</li>')
+          App.reloadArticles();
+        })
+      })
+    },
+
+    buyArticle: ()=>{
+      event.preventDefault()
+
+      var _price = parseInt($(event.target).data('value'))
+
+      App.contracts.ChainList.deployed()
+      .then((instance)=>{
+        return instance.buyArticle({
+          from: App.account,
+          value: web3.toWei(_price, "ether"),
+          gas: 500000
+        })
+      })
+      .then(result=>{
+
+      })
+      .catch(err=>{
+        console.log(err)
       })
     }
 }
 
-$(function () {
-  $(window).load(function () {
+$(() =>{
+  $(window).load(() => {
       App.init()
     })
 })
