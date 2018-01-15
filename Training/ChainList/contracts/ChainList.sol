@@ -17,7 +17,6 @@ contract ChainList {
     uint public articleCounter;
 
     // events
-<<<<<<< HEAD
     event SellArticleEvent(
         uint indexed _id, 
         address indexed _seller, 
@@ -30,10 +29,6 @@ contract ChainList {
         address indexed _buyer, 
         string _name, 
         uint256 _price);
-=======
-    event SellArticleEvent(uint indexed _id, address indexed _seller, string _name, uint256 _price);
-    event BuyArticleEvent(uint indexed _id, address indexed _seller, address indexed _buyer, string _name, uint256 _price);
->>>>>>> 7d3bea0a7650a2620e2b9db2e332e6af9fe24726
 
     // sell an article
     function sellArticle(string _name, string _description, uint256 _price) public {
@@ -48,11 +43,7 @@ contract ChainList {
             _price
         );
 
-<<<<<<< HEAD
         SellArticleEvent(articleCounter, msg.sender, _name, _price);
-=======
-        SellArticleEvent(articleCounter, msg.seller, _name, _price);
->>>>>>> 7d3bea0a7650a2620e2b9db2e332e6af9fe24726
     }
 
     // buy an article
@@ -76,7 +67,7 @@ contract ChainList {
     }
 
     // returns article IDs for sale
-    function getArticlesForSale() public constant returns (uint[]){
+    function getArticlesForSale() public constant returns (uint[]) {
         require(articleCounter > 0);
 
         uint[] memory articleIds = new uint[](articleCounter);
@@ -90,7 +81,7 @@ contract ChainList {
         }
 
         uint[] memory forSale = new uint[](numberOfArticlesForSale);
-        for (uint j = 0; j < numberOfArticlesForSale; j++){
+        for (uint j = 0; j < numberOfArticlesForSale; j++) {
             forSale[j] = articleIds[j];
         }
 
