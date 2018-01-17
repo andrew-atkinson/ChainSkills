@@ -65,7 +65,7 @@ contract('ChainList',accounts => {
     return ChainList.deployed()
       .then(instance => {
         ChainListInstance = instance;
-        return ChainListInstance.sellArticle(articleName1, articleDescription1, web3.toWei(articlePrice1, "ether"), {from: seller})
+        return ChainListInstance.sellArticle(articleName2, articleDescription2, web3.toWei(articlePrice2, "ether"), {from: seller})
       })
       .then(receipt => {
         assert.equal(receipt.logs.length, 1, "should have received one event")
@@ -77,11 +77,11 @@ contract('ChainList',accounts => {
         return ChainListInstance.getNumberOfArticles();
       })
       .then(data=>{
-        assert.equal(data, 2, "number of articles should equal one")
+        assert.equal(data, 2, "number of articles should equal two")
         return ChainListInstance.getArticlesForSale();
       })
       .then(data=>{
-        assert.equal(data.length, 2, "there should be one article for sale")
+        assert.equal(data.length, 2, "there should be two articles for sale")
         articleId = +data[1]
         assert.equal(articleId, 2, "articleId should be 2")
         return ChainListInstance.articles(articleId)
