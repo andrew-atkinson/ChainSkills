@@ -61,6 +61,41 @@ contract('ChainList',accounts => {
       })
   })
 
+  it('should sell a 2nd article', () => {
+    return ChainList.deployed()
+      .then(instance => {
+        ChainListInstance = instance;
+        return ChainListInstance.sellArticle(articleName1, articleDescription1, web3.toWei(articlePrice1, "ether"), {from: seller})
+      })
+      .then(receipt => {
+        assert.equal(receipt.logs.length, 1, "should have received one event")
+        assert.equal(receipt.logs[0].event, "SellArticleEvent", "Event name should be SellArticleEvent")
+        assert.equal(receipt.logs[0].args._id.toNumber(), 2, "Event should have id of 2")
+        assert.equal(receipt.logs[0].args._seller, seller, "Seller should be " + seller)
+        assert.equal(receipt.logs[0].args._name, articleName2, "article name should be " + articleName2)
+        assert.equal(receipt.logs[0].args._price.toNumber(), web3.toWei(articlePrice2, 'ether'), "article name should be " + web3.toWei(articlePrice2, 'ether'))
+        return ChainListInstance.getNumberOfArticles();
+      })
+      .then(data=>{
+        assert.equal(data, 2, "number of articles should equal one")
+        return ChainListInstance.getArticlesForSale();
+      })
+      .then(data=>{
+        assert.equal(data.length, 2, "there should be one article for sale")
+        articleId = +data[1]
+        assert.equal(articleId, 2, "articleId should be 2")
+        return ChainListInstance.articles(articleId)
+      })
+      .then(data=>{
+        assert.equal(data[0].toNumber(), 2, "articleId should be 2")
+        assert.equal(data[1], seller, "should list seller as "+ seller)
+        assert.equal(data[2], 0x0, "buyer should be empty")
+        assert.equal(data[3], articleName2, "article name should be " + articleName2)
+        assert.equal(data[4], articleDescription2, "article description should be " + articleDescription2)
+        assert.equal(data[5], web3.toWei(articlePrice2, "ether"), "price should be " +web3.toWei(articlePrice2, "ether"))
+      })
+  })
+
 
   it('should trigger an event when a new article is sold', () => {
     return ChainList.deployed()
