@@ -56,7 +56,7 @@ contract('ChainList',accounts => {
         assert.equal(data[1], seller, "should list seller as "+ seller)
         assert.equal(data[2], 0x0, "buyer should be empty")
         assert.equal(data[3], articleName1, "article name should be " + articleName1)
-        assert.equal(data[4], articleDescription1, "article description should be " + articleDescription2)
+        assert.equal(data[4], articleDescription1, "article description should be " + articleDescription1)
         assert.equal(data[5], web3.toWei(articlePrice1, "ether"), "price should be " +web3.toWei(articlePrice1, "ether"))
       })
   })

@@ -4,9 +4,12 @@ contract('ChainList', (accounts) => {
   var chainListInstance,
     seller = accounts[1],
     buyer = accounts[2],
-    articleName = "article 1",
-    articleDescription = "Description for article 1",
-    articlePrice = 10
+    articleName1 = "article 1",
+    articleDescription1 = "Description for article 1",
+    articlePrice1 = 10,
+    articleName2 = "article 2",
+    articleDescription2 = "Description for article 2",
+    articlePrice2 = 10
 
     it('should throw an exception if you try to buy an article when there is no article for sale', ()=>{
       return ChainList.deployed()
