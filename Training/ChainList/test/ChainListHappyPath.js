@@ -102,13 +102,13 @@ contract('ChainList',accounts => {
       .then(instance => {
         ChainListInstance = instance
         watcher = ChainListInstance.SellArticleEvent()
-        return ChainListInstance.sellArticle(articleName, articleDescription, web3.toWei(articlePrice, "ether"), {from: seller})
+        return ChainListInstance.sellArticle(articleName1, articleDescription1, web3.toWei(articlePrice1, "ether"), {from: seller})
       })
       .then(receipt => {
         assert.equal(receipt.logs.length, 1, "event should be 1 long")
         assert.equal(receipt.logs[0].args._seller, seller, "should have a seller:" + seller)
-        assert.equal(receipt.logs[0].args._name, articleName, "should have a name:" + articleName)
-        assert.equal(+receipt.logs[0].args._price, web3.toWei(articlePrice, "ether"), "should have a price:" + web3.toWei(articlePrice, "ether"))
+        assert.equal(receipt.logs[0].args._name, articleName1, "should have a name:" + articleName1)
+        assert.equal(+receipt.logs[0].args._price, web3.toWei(articlePrice1, "ether"), "should have a price:" + web3.toWei(articlePrice1, "ether"))
       })
   })
 
@@ -116,11 +116,12 @@ contract('ChainList',accounts => {
     return ChainList.deployed()
       .then(instance => {
         ChainListInstance = instance
+        articleId = 1
         sellerBalanceBeforeBuy = web3.fromWei(+ web3.eth.getBalance(seller), "ether")
         buyerBalanceBeforeBuy = web3.fromWei(+ web3.eth.getBalance(buyer), "ether")
-        return ChainListInstance.buyArticle({
+        return ChainListInstance.buyArticle(articleId, {
           from: buyer,
-          value: web3.toWei(articlePrice, "ether")
+          value: web3.toWei(articlePrice1, "ether")
         })
       })
       .then(receipt => {
@@ -128,24 +129,25 @@ contract('ChainList',accounts => {
         assert.equal(receipt.logs[0].event, "BuyArticleEvent", "buy event should be triggered")
         assert.equal(receipt.logs[0].args._seller, seller, "seller should be " + seller)
         assert.equal(receipt.logs[0].args._buyer, buyer, "buyer should be " + buyer)
-        assert.equal(receipt.logs[0].args._name, articleName, "Article name should be " + articleName)
-        assert.equal(+receipt.logs[0].args._price, web3.toWei(articlePrice, "ether"), "event article should have a price:" + web3.toWei(articlePrice, "ether"))
+        assert.equal(receipt.logs[0].args._name, articleName1, "Article name should be " + articleName1)
+        assert.equal(+receipt.logs[0].args._price, web3.toWei(articlePrice1, "ether"), "event article should have a price:" + web3.toWei(articlePrice1, "ether"))
 
         // post-transaction prices
         sellerBalanceAfterBuy = web3.fromWei(web3.eth.getBalance(seller), "ether").toNumber() // have to convert to number after .fromWei or else test fail (can't use +web3.eth.getBalance(seller) to convert to number)
         buyerBalanceAfterBuy = web3.fromWei(web3.eth.getBalance(buyer), "ether").toNumber()
 
-        assert(sellerBalanceAfterBuy >= sellerBalanceBeforeBuy + articlePrice, "seller should have " + articlePrice + " ETH")
-        assert(buyerBalanceAfterBuy <= buyerBalanceBeforeBuy - articlePrice, "buyer should have " + articlePrice + " ETH") //n.b. <= rather than == because of the gas price.
+        assert(sellerBalanceAfterBuy >= sellerBalanceBeforeBuy + articlePrice1, "seller should have " + articlePrice1 + " ETH")
+        assert(buyerBalanceAfterBuy <= buyerBalanceBeforeBuy - articlePrice1, "buyer should have " + articlePrice1 + " ETH") //n.b. <= rather than == because of the gas price.
 
-        return ChainListInstance.getArticle.call()
+        return ChainListInstance.articles(articleId)
       })
       .then(data => {
-        assert.equal(data[0], seller, "seller must be " + seller)
-        assert.equal(data[1], buyer, "buyer must be empty")
-        assert.equal(data[2], articleName, "article name must be " + articleName)
-        assert.equal(data[3], articleDescription, "article description must be " + articleDescription)
-        assert.equal(+data[4], web3.toWei(articlePrice, "ether"), "Price must be " + web3.toWei(articlePrice, "ether"))
+        assert.equal(data[0].toNumber(), 1, "seller must be " + articleId)
+        assert.equal(data[1], seller, "seller must be " + seller)
+        assert.equal(data[2], buyer, "buyer must be empty")
+        assert.equal(data[3], articleName1, "article name must be " + articleName1)
+        assert.equal(data[4], articleDescription1, "article description must be " + articleDescription1)
+        assert.equal(+data[5], web3.toWei(articlePrice1, "ether"), "Price must be " + web3.toWei(articlePrice1, "ether"))
       })
   })
 })
