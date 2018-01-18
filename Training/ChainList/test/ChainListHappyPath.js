@@ -19,10 +19,15 @@ contract('ChainList',accounts => {
   it('should be initialized with empty values', () => {
     return ChainList.deployed()
       .then(instance => {
-        return instance.getNumberOfArticles()
+        ChainListInstance = instance
+        return ChainListInstance.getNumberOfArticles()
       })
       .then(data => {
-        assert.equal(data, 0x0, 'number of articles must be zero')
+        assert.equal(data, 0, 'number of articles must be zero')
+        return ChainListInstance.getArticlesForSale()
+      })
+      .then(data=>{
+        assert.equal(data.length, 0, 'articles for sale should be empty')
       })
   })
 

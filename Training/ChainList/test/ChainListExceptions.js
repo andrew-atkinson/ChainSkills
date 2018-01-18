@@ -9,18 +9,6 @@ contract('ChainList', (accounts) => {
     articleDescription = "Description for article 1",
     articlePrice = 10
 
-    it('should throw an exception if you try to get articles for sale when there is no article at all', ()=>{
-      return ChainList.deployed()
-        .then(instance=>{
-          chainListInstance = instance
-          return chainListInstance.getArticlesForSale();
-        })
-        .then(assert.fail)
-        .catch(err=>{
-          assert(err.message.indexOf('revert') >= 0, 'error should be revert opcode')
-        })
-    })
-
     it('should throw an exception if you try to buy an article when there is no article for sale', ()=>{
       return ChainList.deployed()
         .then(instance=>{
