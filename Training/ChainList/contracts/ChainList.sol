@@ -70,7 +70,7 @@ contract ChainList {
     function getArticlesForSale() public constant returns (uint[]) {
         if (articleCounter == 0) {
             return new uint[](0);
-            }
+        }
 
         uint[] memory articleIds = new uint[](articleCounter);
         uint numberOfArticlesForSale = 0;
