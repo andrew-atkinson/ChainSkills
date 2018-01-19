@@ -48,9 +48,9 @@ App = {
   reloadArticles: () => {
     if (App.loading) return;
     App.loading = true;
-
+    
     App.displayAccountInfo()
-
+    
     var chainListInstance;
     
     App.contracts.ChainList.deployed()
@@ -65,7 +65,7 @@ App = {
       
       for (var i = 0; i < articleIds.length; i++) {
         var articleId = articleIds[i]
-        chainListInstance.articles(articleId)
+        chainListInstance.articles(+articleId)
         .then(article=>{
             App.displayArticle(
               article[0],
@@ -85,17 +85,17 @@ App = {
   
   displayArticle: (id, seller, name, description, price) => {
     var articlesRow = $('#articlesRow')
-    var etherPrice = web3.fromWei(price, 'ether')
+    var etherPrice = web3.fromWei(price, 'ether') // and converts to number from BigNumber
 
     // retrieve and fill the article template
     var articleTemplate = $('#articleTemplate')
     articleTemplate.find('.panel-title').text(name)
     articleTemplate.find('.article-description').text(description)
     articleTemplate.find('.article-price').text(etherPrice + " ETH")
-    articleTemplate.find('.btn-buy').attr('data-id', id)
+    articleTemplate.find('.btn-buy').attr('data-id', id) //coerces id to number 
     articleTemplate.find('.btn-buy').attr('data-value', etherPrice)
 
-    //  seller?
+    //  if user == seller, hide buy button 
     if (seller == App.account){
       articleTemplate.find('.article-seller').text("You")
       articleTemplate.find('.btn-buy').hide()
@@ -127,24 +127,36 @@ App = {
       })
   },
 
+  // Listen for events raised from the contract
   listenToEvents: () => {
-    App.contracts.ChainList.deployed().then(instance => {
+    App.contracts.ChainList.deployed()
+    .then(instance => {
       instance.SellArticleEvent({}, {
         fromBlock: 0,
         toBlock: 'latest'
-      }).watch((err, event) =>{
-        $("#events").append('<li class="list-group-item">' + event.args._name + ' is for sale' + '</li>')
-        App.reloadArticles();
       })
+      .watch((error, event) => {
+        if (!error) {
+          $("#events").append('<li class="list-group-item">' + event.args._name + ' is for sale' + '</li>');
+        } else {
+          console.error(error);
+        }
+        App.reloadArticles();
+      });
 
       instance.BuyArticleEvent({}, {
         fromBlock: 0,
         toBlock: 'latest'
-      }).watch((err, event) =>{
-        $("#events").append('<li class="list-group-item">' + event.args._buyer + ' bought ' + event.args._name + '</li>')
-        App.reloadArticles();
       })
-    })
+      .watch((error, event) => {
+        if (!error) {
+          $("#events").append('<li class="list-group-item">' + event.args._buyer + ' bought ' + event.args._name + '</li>');
+        } else {
+          console.error(error);
+        }
+        App.reloadArticles();
+      });
+    });
   },
 
   buyArticle: () => {
