@@ -2,12 +2,13 @@ App = {
   web3Provider: null,
   contracts: {},
   account: 0x0,
+  loading: false,
 
-  init: function () {
+  init: () => {
     return App.initWeb3();
   },
 
-  initWeb3: function () {
+  initWeb3: () => {
     /* init web3 and set provider to testrpc */
     if (typeof web3 !== 'undefined') {
       App.web3Provider = web3.currentProvider
@@ -21,12 +22,12 @@ App = {
     return App.initContract()
   },
 
-  displayAccountInfo: function () {
-    web3.eth.getCoinbase(function (err, account) {
+  displayAccountInfo: () => {
+    web3.eth.getCoinbase((err, account) => {
         if (err === null) {
           App.account = account
           $("#account").text(account)
-          web3.eth.getBalance(account, function (err, balance) {
+          web3.eth.getBalance(account, (err, balance) => {
               if (err === null) {
                 $("#accountBalance").text(web3.fromWei(balance, "ether") + " ETH")
               }
@@ -35,8 +36,8 @@ App = {
       })
   },
 
-  initContract: function () {
-    $.getJSON('ChainList.json', function (chainListArtifact) {
+  initContract: () => {
+    $.getJSON('ChainList.json', chainListArtifact => {
         App.contracts.ChainList = TruffleContract(chainListArtifact)
         App.contracts.ChainList.setProvider(App.web3Provider)
         App.listenToEvents()
@@ -44,112 +45,132 @@ App = {
       })
   },
 
-  reloadArticles: function () {
+  reloadArticles: () => {
+    if (App.loading) return;
+    App.loading = true;
+
     App.displayAccountInfo()
 
+    var chainListInstance;
+    
     App.contracts.ChainList.deployed()
-      .then(function (instance) {
-        return instance.getArticle.call()
+    .then(instance => {
+      chainListInstance = instance
+      return chainListInstance.getArticlesForSale()
+    })
+    .then(articleIds => {
+      // retrieve and empty the articlesRow placeholder
+      var articlesRow = $('#articlesRow')
+      articlesRow.empty()
+      
+      for (var i = 0; i < articleIds.length; i++) {
+        var articleId = articleIds[i]
+        chainListInstance.articles(articleId)
+        .then(article=>{
+            App.displayArticle(
+              article[0],
+              article[1],
+              article[3],
+              article[4],
+              article[5]
+            )
+          })
+        }
+        App.loading = false
       })
-      .then(function (article) {
-        if (article[0] === 0x0) return; //i.e. there's no article
-        
-        // retrieve and empty the articlesRow placeholder
-        var articlesRow = $('#articlesRow')
-        articlesRow.empty()
-
-        var price = web3.fromWei(article[4], "ether")
-
-        // retrieve and fill the article template
-        var articleTemplate = $('#articleTemplate')
-        articleTemplate.find('.panel-title').text(article[2])
-        articleTemplate.find('.article-description').text(article[3])
-        articleTemplate.find('.article-price').text(price)
-        articleTemplate.find('.btn-buy').attr('data-value', price)
-
-        // access seller
-        var seller = article[0];
-        if (seller === App.account) seller = "You"
-        articleTemplate.find('.article-seller').text(seller)
-
-        //access buyer
-        var buyer = article[1];
-        if (buyer === App.account) {
-          buyer = "You"
-        } else if (buyer === 0x0) buyer = "No one yet"
-        articleTemplate.find('.article-buyer').text(buyer)
-
-        if (article[0] == App.account || article[1] != 0x0) articleTemplate.find('.btn-buy').hide() // n.b. 'article[1] !=', not 'article[1] !=='
-
-        // append the new article
-        articlesRow.append(articleTemplate.html())
-      }).catch((err) => {
-        console.log(err.message)
+      .catch(err => {
+        App.loading = false
       })
     },
+  
+  displayArticle: (id, seller, name, description, price) => {
+    var articlesRow = $('#articlesRow')
+    var etherPrice = web3.fromWei(price, 'ether')
 
-    sellArticle: function(){
-      var _article_name = $('#article_name').val()
-      var _description =  $('#article_description').val()
-      var _price =  web3.toWei(parseInt($('#article_price').val() || 0), "ether")
+    // retrieve and fill the article template
+    var articleTemplate = $('#articleTemplate')
+    articleTemplate.find('.panel-title').text(name)
+    articleTemplate.find('.article-description').text(description)
+    articleTemplate.find('.article-price').text(etherPrice + " ETH")
+    articleTemplate.find('.btn-buy').attr('data-id', id)
+    articleTemplate.find('.btn-buy').attr('data-value', etherPrice)
 
-      if ((_article_name.trim() === '') || (_price === 0)) return false
-
-      App.contracts.ChainList.deployed()
-        .then(function(instance){
-          return instance.sellArticle(_article_name, _description, _price, {from:App.account, gas: 500000})
-        })
-        .then(function(result){
-
-        })
-        .catch(function(err){
-          console.error(err)
-        })
-    },
-
-    listenToEvents: ()  => {
-      App.contracts.ChainList.deployed().then((instance)=> {
-        instance.SellArticleEvent({}, {
-          fromBlock: 0,
-          toBlock: 'latest'
-        }).watch((err, event) =>{
-          $("#events").append('<li class="list-group-item">' + event.args._name + ' is for sale' + '</li>')
-          App.reloadArticles();
-        })
-
-        instance.BuyArticleEvent({}, {
-          fromBlock: 0,
-          toBlock: 'latest'
-        }).watch((err, event) =>{
-          $("#events").append('<li class="list-group-item">' + event.args._buyer + ' bought ' + event.args._name + '</li>')
-          App.reloadArticles();
-        })
-      })
-    },
-
-    buyArticle: ()=>{
-      event.preventDefault()
-
-      var _price = parseInt($(event.target).data('value'))
-
-      App.contracts.ChainList.deployed()
-      .then((instance)=>{
-        return instance.buyArticle({
-          from: App.account,
-          value: web3.toWei(_price, "ether"),
-          gas: 500000
-        })
-      })
-      .then(result=>{
-
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+    //  seller?
+    if (seller == App.account){
+      articleTemplate.find('.article-seller').text("You")
+      articleTemplate.find('.btn-buy').hide()
+    } else {
+      articleTemplate.find('.article-seller').text(seller)
+      articleTemplate.find('.btn-buy').show()
     }
+
+    // append the new article
+    articlesRow.append(articleTemplate.html())
+  },
+
+  sellArticle: () => {
+    var _article_name = $('#article_name').val()
+    var _description =  $('#article_description').val()
+    var _price =  web3.toWei(parseFloat($('#article_price').val() || 0), "ether")
+
+    if ((_article_name.trim() === '') || (_price === 0)) return false
+
+    App.contracts.ChainList.deployed()
+      .then(instance => {
+        return instance.sellArticle(_article_name, _description, _price, {from:App.account, gas: 500000})
+      })
+      .then(result => {
+
+      })
+      .catch(err => {
+        console.error(err)
+      })
+  },
+
+  listenToEvents: () => {
+    App.contracts.ChainList.deployed().then(instance => {
+      instance.SellArticleEvent({}, {
+        fromBlock: 0,
+        toBlock: 'latest'
+      }).watch((err, event) =>{
+        $("#events").append('<li class="list-group-item">' + event.args._name + ' is for sale' + '</li>')
+        App.reloadArticles();
+      })
+
+      instance.BuyArticleEvent({}, {
+        fromBlock: 0,
+        toBlock: 'latest'
+      }).watch((err, event) =>{
+        $("#events").append('<li class="list-group-item">' + event.args._buyer + ' bought ' + event.args._name + '</li>')
+        App.reloadArticles();
+      })
+    })
+  },
+
+  buyArticle: () => {
+    event.preventDefault()
+
+    var _articleId = $(event.target).data('id')
+    var _price = parseFloat($(event.target).data('value'))
+
+    App.contracts.ChainList.deployed()
+    .then(instance => {
+      return instance.buyArticle(_articleId, {
+        from: App.account,
+        value: web3.toWei(_price, "ether"),
+        gas: 500000
+      })
+    })
+    .then(result => {
+
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  }
 }
 
-$(() =>{
+$(() => {
   $(window).load(() => {
       App.init()
     })
