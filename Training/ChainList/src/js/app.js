@@ -152,8 +152,11 @@ App = {
           console.error(error);
         }
         App.reloadArticles();
-      });
-    });
+      })
+    })
+    .catch(err => {
+      console.log(err)
+    })
   },
 
   buyArticle: () => {
