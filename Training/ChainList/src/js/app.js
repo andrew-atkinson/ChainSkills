@@ -9,7 +9,7 @@ App = {
   },
 
   initWeb3: () => {
-    /* init web3 and set provider to testrpc */
+    // init web3 and set provider to testrpc
     if (typeof web3 !== 'undefined') {
       App.web3Provider = web3.currentProvider
       web3 = new Web3(web3.currentProvider)
@@ -119,9 +119,6 @@ App = {
       .then(instance => {
         return instance.sellArticle(_article_name, _description, _price, {from:App.account, gas: 500000})
       })
-      .then(result => {
-
-      })
       .catch(err => {
         console.error(err)
       })
@@ -172,9 +169,6 @@ App = {
         value: web3.toWei(_price, "ether"),
         gas: 500000
       })
-    })
-    .then(result => {
-
     })
     .catch(err => {
       console.log(err)
