@@ -1,0 +1,5 @@
+# ignore the rinkeby test net
+/rinkeby/geth
+/rinkeby/keystore
+
+.DS_Store
